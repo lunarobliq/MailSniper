@@ -241,11 +241,11 @@ $TASource=@'
   {
     ("[*] Autodiscovering email server for " + $AutoDiscoverEmail + "...")
     $service.AutoDiscoverUrl($AutoDiscoverEmail, {$true})
-    $ExchUri = New-Object System.Uri(("http://" + $service.Url.Host + "/PowerShell"))
+    $ExchUri = New-Object System.Uri(("https://" + $service.Url.Host + "/PowerShell"))
   }
   else
   {
-    $ExchUri = New-Object System.Uri(("http://" + $ExchHostname + "/PowerShell/"))
+    $ExchUri = New-Object System.Uri(("https://" + $ExchHostname + "/PowerShell/"))
   }
 
   #If the Exchange admin credentials were passed to the command line use those else prompt for Exchange admin credentials.
@@ -279,7 +279,7 @@ $TASource=@'
   
   if($AutoDiscoverEmail -ne "")
   {
-    Write-Output ("[*] Attempting to establish a PowerShell session to http://" + $service.Url.Host + "/PowerShell with provided credentials.")
+    Write-Output ("[*] Attempting to establish a PowerShell session to https://" + $service.Url.Host + "/PowerShell with provided credentials.")
     try
     {
       Import-PSSession $Session -DisableNameChecking -AllowClobber -verbose:$false | Out-Null
@@ -292,7 +292,7 @@ $TASource=@'
   }
   else
   {
-    Write-Output ("[*] Attempting to establish a PowerShell session to http://" + $ExchHostname + "/PowerShell with provided credentials.")
+    Write-Output ("[*] Attempting to establish a PowerShell session to https://" + $ExchHostname + "/PowerShell with provided credentials.")
     try
     {
       Import-PSSession $Session -DisableNameChecking -AllowClobber -verbose:$false | Out-Null
@@ -1531,22 +1531,103 @@ function Get-GlobalAddressList{
 
         #The ResolveName function only will return a max of 100 results from the Global Address List. So we search two letter combinations to try and retrieve as many as possible.
         $GlobalAddressList = @()
+		$GALConnErrorMissed = @()
+		$GALConnErrorMissed2 = @()
+		$GALConnErrorMissed3 = @()
+		$WHATWASMISSED = @()
         foreach($combo in $lettercombinations)
         {
-            $galresults = $service.ResolveName($combo)
-            foreach($item in $galresults)
-            {
-                Write-Output $item.Mailbox.Address
-                $GlobalAddressList += $item.Mailbox
-            }
-
+			try
+			{
+				Start-Sleep -s 2
+				$galresults = $service.ResolveName($combo)
+				foreach($item in $galresults)
+				{
+					Write-Output $item.Mailbox.Address
+					$GlobalAddressList += $item.Mailbox
+				}
+			}
+			catch
+			{
+					$ErrorMessage = $_.Exception.Message
+					Write-Output "[!][$combo] $ErrorMessage"
+					$GALConnErrorMissed += ($combo + $_)
+			}
         }
+		
+		Write-Output "[*] Attempting to get missed try 2 ..."
+		foreach($combo in $GALConnErrorMissed)
+        {
+			try
+			{
+				Start-Sleep -s 2
+				$galresults = $service.ResolveName($combo)
+				foreach($item in $galresults)
+				{
+					Write-Output $item.Mailbox.Address
+					$GlobalAddressList += $item.Mailbox
+				}
+			}
+			catch
+			{
+					$ErrorMessage = $_.Exception.Message
+					Write-Output "[!][$combo] $ErrorMessage"
+					$GALConnErrorMissed2 += ($combo + $_)
+			}
+        }
+		
+		Write-Output "[*] Attempting to get missed try 3 ..."
+		foreach($combo in $GALConnErrorMissed2)
+        {
+			try
+			{
+				Start-Sleep -s 3
+				$galresults = $service.ResolveName($combo)
+				foreach($item in $galresults)
+				{
+					Write-Output $item.Mailbox.Address
+					$GlobalAddressList += $item.Mailbox
+				}
+			}
+			catch
+			{
+					$ErrorMessage = $_.Exception.Message
+					Write-Output "[!][$combo] $ErrorMessage"
+					$GALConnErrorMissed3 += ($combo + $_)
+			}
+        }
+		
+		Write-Output "[*] Attempting to get missed try 4 (FINAL)..."
+		foreach($combo in $GALConnErrorMissed3)
+        {
+			try
+			{
+				Start-Sleep -s 4
+				$galresults = $service.ResolveName($combo)
+				foreach($item in $galresults)
+				{
+					Write-Output $item.Mailbox.Address
+					$GlobalAddressList += $item.Mailbox
+				}
+			}
+			catch
+			{
+					$ErrorMessage = $_.Exception.Message
+					Write-Output "[!][$combo] FAIL TO SEARCH FOR THE TERM BEFORE after trying 4 times :( "
+					$WHATWASMISSED+= ($combo + $_)
+			}
+        }
+		
         Write-Output "[*] Now cleaning up the list..."
         $GlobalAddressList = $GlobalAddressList | Sort-Object | Get-Unique
         Write-Output ("A total of " + $GlobalAddressList.count + " email addresses were retrieved")
         If ($OutFile -ne "")
         {
             $GlobalAddressList | Select-Object Address | Out-File -Encoding ascii $OutFile
+        }
+		Foreach ($letter in $WHATWASMISSED)
+        {
+            Write-Output "[*] Failed to complete search for: $letter" 
         }
     }
 }
