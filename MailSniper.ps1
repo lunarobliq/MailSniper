@@ -1535,11 +1535,12 @@ function Get-GlobalAddressList{
 		$GALConnErrorMissed2 = @()
 		$GALConnErrorMissed3 = @()
 		$WHATWASMISSED = @()
+		
         foreach($combo in $lettercombinations)
         {
 			try
 			{
-				Start-Sleep -s 2
+				Start-Sleep -s 1
 				$galresults = $service.ResolveName($combo)
 				foreach($item in $galresults)
 				{
@@ -1551,7 +1552,7 @@ function Get-GlobalAddressList{
 			{
 					$ErrorMessage = $_.Exception.Message
 					Write-Output "[!][$combo] $ErrorMessage"
-					$GALConnErrorMissed += ($combo + $_)
+					$GALConnErrorMissed += ($combo)
 			}
         }
 		
@@ -1560,7 +1561,7 @@ function Get-GlobalAddressList{
         {
 			try
 			{
-				Start-Sleep -s 2
+				Start-Sleep -s 1
 				$galresults = $service.ResolveName($combo)
 				foreach($item in $galresults)
 				{
@@ -1572,7 +1573,7 @@ function Get-GlobalAddressList{
 			{
 					$ErrorMessage = $_.Exception.Message
 					Write-Output "[!][$combo] $ErrorMessage"
-					$GALConnErrorMissed2 += ($combo + $_)
+					$GALConnErrorMissed2 += ($combo)
 			}
         }
 		
@@ -1581,7 +1582,7 @@ function Get-GlobalAddressList{
         {
 			try
 			{
-				Start-Sleep -s 3
+				Start-Sleep -s 1
 				$galresults = $service.ResolveName($combo)
 				foreach($item in $galresults)
 				{
@@ -1593,7 +1594,7 @@ function Get-GlobalAddressList{
 			{
 					$ErrorMessage = $_.Exception.Message
 					Write-Output "[!][$combo] $ErrorMessage"
-					$GALConnErrorMissed3 += ($combo + $_)
+					$GALConnErrorMissed3 += ($combo)
 			}
         }
 		
@@ -1602,7 +1603,7 @@ function Get-GlobalAddressList{
         {
 			try
 			{
-				Start-Sleep -s 4
+				Start-Sleep -s 1
 				$galresults = $service.ResolveName($combo)
 				foreach($item in $galresults)
 				{
@@ -1614,7 +1615,7 @@ function Get-GlobalAddressList{
 			{
 					$ErrorMessage = $_.Exception.Message
 					Write-Output "[!][$combo] FAIL TO SEARCH FOR THE TERM BEFORE after trying 4 times :( "
-					$WHATWASMISSED+= ($combo + $_)
+					$WHATWASMISSED+= ($combo)
 			}
         }
 		
