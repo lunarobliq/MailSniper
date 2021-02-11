@@ -1551,18 +1551,19 @@ function Get-GlobalAddressList{
 			catch
 			{
 					$ErrorMessage = $_.Exception.Message
-					Write-Output "[!][$combo] $ErrorMessage"
-					$GALConnErrorMissed += ($combo)
+					Write-Output "[!][$combo]"
+					Write-Output "	$ErrorMessage"
+					$GALConnErrorMissed += $combo
 			}
         }
 		
 		Write-Output "[*] Attempting to get missed try 2 ..."
-		foreach($combo in $GALConnErrorMissed)
+		foreach($combo1 in $GALConnErrorMissed)
         {
 			try
 			{
 				Start-Sleep -s 1
-				$galresults = $service.ResolveName($combo)
+				$galresults = $service.ResolveName($combo1)
 				foreach($item in $galresults)
 				{
 					Write-Output $item.Mailbox.Address
@@ -1572,18 +1573,19 @@ function Get-GlobalAddressList{
 			catch
 			{
 					$ErrorMessage = $_.Exception.Message
-					Write-Output "[!][$combo] $ErrorMessage"
-					$GALConnErrorMissed2 += ($combo)
+					Write-Output "[!][$combo1]"
+					Write-Output "	$ErrorMessage"
+					$GALConnErrorMissed2 += $combo1
 			}
         }
 		
 		Write-Output "[*] Attempting to get missed try 3 ..."
-		foreach($combo in $GALConnErrorMissed2)
+		foreach($combo2 in $GALConnErrorMissed2)
         {
 			try
 			{
 				Start-Sleep -s 1
-				$galresults = $service.ResolveName($combo)
+				$galresults = $service.ResolveName($combo2)
 				foreach($item in $galresults)
 				{
 					Write-Output $item.Mailbox.Address
@@ -1593,18 +1595,19 @@ function Get-GlobalAddressList{
 			catch
 			{
 					$ErrorMessage = $_.Exception.Message
-					Write-Output "[!][$combo] $ErrorMessage"
-					$GALConnErrorMissed3 += ($combo)
+					Write-Output "[!][$combo2]"
+					Write-Output "	$ErrorMessage"
+					$GALConnErrorMissed3 += $combo2
 			}
         }
 		
 		Write-Output "[*] Attempting to get missed try 4 (FINAL)..."
-		foreach($combo in $GALConnErrorMissed3)
+		foreach($combo3 in $GALConnErrorMissed3)
         {
 			try
 			{
 				Start-Sleep -s 1
-				$galresults = $service.ResolveName($combo)
+				$galresults = $service.ResolveName($combo3)
 				foreach($item in $galresults)
 				{
 					Write-Output $item.Mailbox.Address
@@ -1614,8 +1617,9 @@ function Get-GlobalAddressList{
 			catch
 			{
 					$ErrorMessage = $_.Exception.Message
-					Write-Output "[!][$combo] FAIL TO SEARCH FOR THE TERM BEFORE after trying 4 times :( "
-					$WHATWASMISSED+= ($combo)
+					Write-Output "[!][$combo3] FAIL TO SEARCH FOR THE TERM BEFORE after trying 4 times :( "
+					Write-Output "	$ErrorMessage"
+					$WHATWASMISSED+= $combo3
 			}
         }
 		
